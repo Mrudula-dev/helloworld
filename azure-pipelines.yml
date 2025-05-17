@@ -1,0 +1,27 @@
+trigger:
+- main  # or your branch name
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  JAVA_HOME: $(JAVA_HOME_11_X64)
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'package'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.11'
+    mavenVersionOption: 'Default'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: package
+
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'Tomcat-VM-Connection'  
+    sourceFolder: '$(System.DefaultWorkingDirectory)/target'
+    contents: '**/*.war'
+    targetFolder: '/home/azureuser/apache-tomcat/webapps'
